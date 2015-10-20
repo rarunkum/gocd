@@ -120,6 +120,7 @@ public class ApplicationInitializer implements ApplicationListener<ContextRefres
             pipelineSqlMapDao.initialize();
             commandRepositoryInitializer.initialize();
             consoleActivityMonitor.populateActivityMap();
+            consoleActivityMonitor.populateScheduledActivityMap();
             timerScheduler.initialize();
             stageResourceImporter.initialize();
             goCasServiceProperties.initialize();

@@ -49,6 +49,10 @@
           p:targetObject-ref="scheduleService"
           p:targetMethod="cancelHungJobs"/>
 
+    <bean id="cancelScheduledJobs" class="com.thoughtworks.go.timer.ModeAwareMethodInvokingTimerTaskFactoryBean"
+          p:targetObject-ref="scheduleService"
+          p:targetMethod="cancelScheduledJobs"/>
+
     <bean id="checkDiskSpaceTask" class="com.thoughtworks.go.timer.ModeAwareMethodInvokingTimerTaskFactoryBean"
         p:targetObject-ref="goDiskSpaceMonitor"
         p:targetMethod="onTimer"/>

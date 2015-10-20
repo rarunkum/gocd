@@ -333,6 +333,14 @@
         AND state IN ('Preparing', 'Building', 'Completing')
     </select>
 
+    <select id="getWaitingJobIdentifier" resultMap="jobIdentifier">
+        SELECT pipelineName, pipelineCounter, pipelineLabel, stageName, stageCounter, name, id AS buildId, rerunOfCounter
+        FROM _builds
+        WHERE ignored != true
+        AND id = #id#
+        AND state IN ('Scheduled', 'Assigned')
+    </select>
+
     <select id="getActiveJobIds" resultClass="long">
         SELECT builds.id
         FROM builds

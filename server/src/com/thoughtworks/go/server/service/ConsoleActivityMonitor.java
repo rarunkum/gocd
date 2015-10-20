@@ -44,6 +44,7 @@ public class ConsoleActivityMonitor {
     private final GoConfigService goConfigService;
     private ConsoleService consoleService;
     private final ConcurrentMap<JobIdentifier, Long> jobLastActivityMap;
+    private final ConcurrentHashMap<JobIdentifier, Long> waitingJobLastActivityMap;
     private final long warningThreshold;
 
     @Autowired
@@ -55,11 +56,24 @@ public class ConsoleActivityMonitor {
         this.goConfigService = goConfigService;
         this.consoleService = consoleService;
         this.jobLastActivityMap = new ConcurrentHashMap<JobIdentifier, Long>();
+        this.waitingJobLastActivityMap = new ConcurrentHashMap<JobIdentifier, Long>();
         warningThreshold = systemEnvironment.getUnresponsiveJobWarningThreshold();
         jobInstanceService.registerJobStateChangeListener(new ActiveJobListener(this));
     }
 
     public void populateActivityMap() {
+        long now = timeProvider.currentTimeMillis();
+        for (JobIdentifier jobIdentifier : jobInstanceService.allBuildingJobs()) {
+            jobLastActivityMap.put(jobIdentifier, now);
+        }
+        LOGGER.info(String.format("Found '%s' building jobs. Added them with '%s' as the last heard time", jobLastActivityMap.size(), new DateTime(now)));
+        for (JobIdentifier jobIdentifier : jobInstanceService.allWaitingJobs()) {
+            waitingJobLastActivityMap.put(jobIdentifier, now);
+        }
+        LOGGER.info(String.format("Found '%s' waiting jobs. Added them with '%s' as the last heard time", jobLastActivityMap.size(), new DateTime(now)));
+    }
+
+    public void populateScheduledActivityMap() {
         long now = timeProvider.currentTimeMillis();
         for (JobIdentifier jobIdentifier : jobInstanceService.allBuildingJobs()) {
             jobLastActivityMap.put(jobIdentifier, now);
@@ -95,6 +109,19 @@ public class ConsoleActivityMonitor {
                 LOGGER.info(String.format("Job '%s' has not updated console log for more than '%s' minutes", jobIdentifier.buildLocator(), inMinutes(difference)));
                 removeHungJobWarning(jobIdentifier);
                 addJobHungWarning(jobIdentifier, difference);
+            }
+        }
+    }
+
+    public void cancelUnresponsiveScheduledJobs(ScheduleService scheduleService) {
+        long currentTime = timeProvider.currentTimeMillis();
+        for (Map.Entry<JobIdentifier, Long> jobTimeEntry : waitingJobLastActivityMap.entrySet()) {
+            long difference = currentTime - jobTimeEntry.getValue();
+            JobIdentifier jobIdentifier = jobTimeEntry.getKey();
+            if (difference > warningThreshold) {
+                LOGGER.info(String.format("Job '%s' has not been assigned to any agents for more than '%s' minutes", jobIdentifier.buildLocator(), inMinutes(difference)));
+//                removeHungJobWarning(jobIdentifier);
+//                addJobHungWarning(jobIdentifier, difference);
             }
         }
     }

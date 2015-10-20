@@ -65,6 +65,8 @@ public interface JobInstanceDao {
 
     List<JobIdentifier> getBuildingJobs();
 
+    List<JobIdentifier> getWaitingJobs();
+
     List<JobInstance> completedJobsOnAgent(String uuid, JobInstanceService.JobHistoryColumns jobHistoryColumns, SortOrder order, int offset, int limit);
 
     int totalCompletedJobsOnAgent(String uuid);

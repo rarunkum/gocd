@@ -584,6 +584,15 @@ public class ScheduleService {
         }
     }
 
+    // Note: This is also called from a spring timer (cancelScheduledJobs)
+    public void cancelScheduledJobs() {
+        try {
+            consoleActivityMonitor.cancelUnresponsiveScheduledJobs(this);
+        } catch (Exception e) {
+            LOGGER.error("Error occurred during cancelling unresponsive job: ", e);
+        }
+    }
+
     private List<String> getLiveAgentUuids(AgentInstances knownAgents) {
         List<String> agents = new ArrayList<String>();
         for (AgentInstance agent : knownAgents) {

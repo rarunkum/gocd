@@ -300,6 +300,10 @@ public class JobInstanceService implements JobPlanLoader {
         return jobInstanceDao.getBuildingJobs();
     }
 
+    public List<JobIdentifier> allWaitingJobs() {
+        return jobInstanceDao.getWaitingJobs();
+    }
+
     public void registerJobStateChangeListener(JobStatusListener jobStatusListener) {
         synchronized (LISTENERS_MODIFICATION_MUTEX) {
             listeners.add(jobStatusListener);

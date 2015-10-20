@@ -247,6 +247,10 @@ public class JobInstanceSqlMapDao extends SqlMapClientDaoSupport implements JobI
         return buildingJobs(getActiveJobIds());
     }
 
+    public List<JobIdentifier> getWaitingJobs() {
+        return waitingJobs(getActiveJobIds());
+    }
+
     public List<JobInstance> completedJobsOnAgent(String uuid, JobInstanceService.JobHistoryColumns jobHistoryColumns, SortOrder order, int offset, int limit) {
         Map params = arguments("uuid", uuid).
                 and("offset", offset).
@@ -269,6 +273,17 @@ public class JobInstanceSqlMapDao extends SqlMapClientDaoSupport implements JobI
             }
         }
         return buildingJobs;
+    }
+
+    private List<JobIdentifier> waitingJobs(List<Long> activeJobIds) {
+        List<JobIdentifier> waitingJobs = new ArrayList<JobIdentifier>();
+        for (Long activeJobId : activeJobIds) {
+            JobIdentifier jobIdentifier = (JobIdentifier) getSqlMapClientTemplate().queryForObject("getWaitingJobIdentifier", activeJobId);
+            if (jobIdentifier != null) {
+                waitingJobs.add(jobIdentifier);
+            }
+        }
+        return waitingJobs;
     }
 
     public JobInstance updateAssignedInfo(final JobInstance jobInstance) {
